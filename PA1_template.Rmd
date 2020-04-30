@@ -11,7 +11,7 @@ output:
 #Initial data download
 
 The data is initially downloaded from here
-```{r}
+```{r, echo=TRUE}
 url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 destfile <- "download.zip"
 if(!file.exists(destfile)) {
@@ -29,7 +29,7 @@ act <- read.csv("activity.csv")
 ```
 
 Converting date format:
-```{r}
+```{r, echo=TRUE}
 library(lubridate)
 act$date <- ymd(act$date)
 ```
@@ -38,7 +38,7 @@ act$date <- ymd(act$date)
 ## What is mean total number of steps taken per day?
 
 I group the dates by day and use ggplot to make the histogram
-```{r}
+```{r, echo=TRUE}
 library(dplyr)
 library(ggplot2)
 
@@ -61,7 +61,7 @@ median(act_day$d_sum)
 ## What is the average daily activity pattern?
 
 To look at the average daily pattern I group by interval to compare steps on a more granular level
-```{r}
+```{r, echo=TRUE}
 act_int <- act %>%  
         group_by(interval) %>%  
         summarize(i_mean = mean(steps, na.rm = TRUE))
@@ -74,13 +74,13 @@ act_int[act_int$i_mean==max(act_int$i_mean),]
 
 ## Imputing missing values
 Count how many NAs are in data frame:
-```{r}
+```{r, echo=TRUE}
 sum(is.na(act))
 ```
 
 Since I've already calculated the mean for the intervals (act_int), I will use these to fill in the NA values.
 
-```{r}
+```{r, echo=TRUE}
 act1 <- merge(act, act_int)
 
 act1$steps[is.na(act1$steps)] <- act1$i_mean[is.na(act1$steps)]
@@ -88,7 +88,7 @@ act1$steps[is.na(act1$steps)] <- act1$i_mean[is.na(act1$steps)]
 
 Now I'll compare with with the original calculation with NAs
 
-```{R}
+```{r, echo=TRUE}
 act_day1 <- act1 %>%  # specify dataframe
         group_by(date)   %>%
         summarize(d_sum1 = sum(steps, na.rm = TRUE))
@@ -97,7 +97,7 @@ qplot(d_sum1, data = act_day1, main = "Frequency of Steps each Day", xlab = "Ste
 ```
 
 Now I'll calculate the mean and median of the new dataset and compare it with the prevoius version which omited NAs
-```{r}
+```{r, echo=TRUE}
 mean(act_day1$d_sum1)
 median(act_day1$d_sum1)
 
@@ -109,14 +109,14 @@ median(act_day1$d_sum1) - median(act_day$d_sum)
 ## Are there differences in activity patterns between weekdays and weekends?
 
 First I displayed whether each day is a weekend or weekday
-```{r}
+```{r, echo=TRUE}
 act1$dayofwk <- weekdays(act1$date)
 act1$weekend <-as.factor(act1$dayofwk=="Saturday"|act1$dayofwk=="Sunday")
 levels(act1$weekend) <- c("Weekday", "Weekend")
 ```
 
 Next I created seperated dataframes for weekdays and weekends for the plots.  I repeat the exercise above to group and plot by interval for each new dataframe.
-```{r}
+```{r, echo=TRUE}
 act_wd <- act1[act1$weekend=="Weekday",]
 act_we <- act1[act1$weekend=="Weekend",]
 
@@ -132,7 +132,7 @@ act_we1 <- act_we %>%
 ```
 
 Now we plot these in two different frames
-```{r}
+```{r, echo=TRUE}
 act2 <- rbind(act_wd, act_we)
 ggplot(act2, aes(interval, i_mean)) + facet_grid(weekend ~ .) + geom_line() + ylab("Steps") + ggtitle("Weekday v. Weekend") 
 ```
